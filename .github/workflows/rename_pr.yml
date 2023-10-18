@@ -1,0 +1,31 @@
+name: Update PR Description
+on:
+  pull_request:
+    types:
+      - opened  # Trigger this workflow when a new PR is opened
+
+jobs:
+  update_description:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Update PR Description
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get the current pull request number
+          PR_NUMBER=$(jq -r .pull_request.number "$GITHUB_EVENT_PATH")
+
+          # New description text
+          NEW_DESCRIPTION="Your updated PR description here."
+
+          # Use the GitHub API to update the PR description
+          curl -X PATCH \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" \
+            -d "{\"body\":\"$NEW_DESCRIPTION\"}"
+
+          echo "PR description updated."
